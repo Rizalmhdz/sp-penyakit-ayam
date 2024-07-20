@@ -39,7 +39,7 @@ $diagnosis = $_SESSION['diagnosis'];
     </main>
 
     <footer class="mt-auto text-white-50">
-      <p>Cover template for <a href="https://getbootstrap.com/" class="text-white">Bootstrap</a>, by <a href="https://twitter.com/mdo" class="text-white">@mdo</a>.</p>
+      <p>SP - <a href="index.php" class="text-white">Daftar Penanganan Penyakit Ayam</a> @2024</p>
     </footer>
   </div>
 
@@ -53,5 +53,6 @@ $diagnosis = $_SESSION['diagnosis'];
       doc.save('diagnosis_report.pdf');
     }
   </script>
+  
 </body>
 </html>

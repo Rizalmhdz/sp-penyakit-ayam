@@ -1,6 +1,7 @@
 <?php
 include 'db.php';
 
+
 session_start();
 
 // Fetch Symptoms
@@ -12,9 +13,13 @@ if (!isset($_SESSION['symptom_index'])) {
     $_SESSION['symptom_index'] = 0;
 }
 
-$symptom_index = $_SESSION['symptom_index'];
-$symptoms_to_display = array_slice($symptoms, $symptom_index, 5);
+if (!isset($_SESSION['selected_symptoms'])) {
+    $_SESSION['selected_symptoms'] = [];
+}
 
+$symptom_index = intval($_SESSION['symptom_index']);
+
+$symptoms_to_display = array_slice($symptoms, $symptom_index, 5);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['next'])) {
         foreach ($_POST['symptom'] as $index => $value) {
@@ -31,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $symptom_index = 0;
             $_SESSION['symptom_index'] = 0;
         }
-        
+
         // Forward Chaining Logic
         $selected_symptoms = "'" . implode("', '", $_SESSION['selected_symptoms']) . "'";
         $sql = "SELECT d.code, d.name, d.advice, COUNT(*) as symptom_count
@@ -57,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (isset($_POST['reset'])) {
         session_unset();
         session_destroy();
-        header('Location: index.php');
+        header('Location: diagnose.php');
         exit();
     }
 }
@@ -74,35 +79,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body class="d-flex h-100 text-center">
   <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-    <header class="mb-auto text-center">
-      <h3 class="mb-0">Sistem Pakar</h3>
+  <header class="mb-auto text-center">
+      <h3 class="mb-0" onclick="window.location.href = 'index.php'" style="cursor: pointer;">Sistem Pakar</h3>
+      <nav class="nav nav-masthead justify-content-center mt-2">
+        <?php if (isset($_SESSION['username'])): ?>
+          <a class="nav-link fw-bold py-1 px-0 active" href="index.php"><?= $_SESSION['username'] ?></a>
+          <a class="nav-link fw-bold py-1 px-0" href="admin.php">Kelola Data</a>
+          <a class="nav-link fw-bold py-1 px-0" href="logout.php">Logout</a>
+        <?php else: ?>
+          <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="index.php">Home</a>
+          <a class="nav-link fw-bold py-1 px-0" href="login.php">Login</a>
+        <?php endif; ?>
+      </nav>
     </header>
 
     <main class="px-3">
       <h1>Diagnosa Penyakit Pada Ayam</h1>
       <form method="post" action="diagnose.php">
-        <?php foreach ($symptoms_to_display as $index => $symptom): ?>
-          <div class="mb-3 symptom-question">
-            <p class="question">Apakah ayam anda mengalami gejala <?= $symptom['name'] ?>?</p>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="symptom[<?= $index ?>]" id="symptom-yes-<?= $index ?>" value="<?= $symptom['code'] ?>">
-              <label class="form-check-label text-dark" for="symptom-yes-<?= $index ?>">Iya</label>
+        <?php if (!empty($symptoms_to_display)): ?>
+          <?php foreach ($symptoms_to_display as $index => $symptom):?>
+            
+            <div class="mb-3 symptom-question">
+              <p class="question">Apakah ayam anda mengalami gejala <?= htmlspecialchars($symptom['name']) ?>?</p>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" required name="symptom[<?= $index ?>]" id="symptom-yes-<?= $index ?>" value="<?= htmlspecialchars($symptom['code']) ?>"> 
+                <label class="form-check-label text-dark" for="symptom-yes-<?= $index ?>">Iya</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" required name="symptom[<?= $index ?>]" id="symptom-no-<?= $index ?>" value="">
+                <label class="form-check-label text-dark" for="symptom-no-<?= $index ?>">Tidak</label>
+              </div>
             </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input" type="radio" name="symptom[<?= $index ?>]" id="symptom-no-<?= $index ?>" value="">
-              <label class="form-check-label text-dark" for="symptom-no-<?= $index ?>">Tidak</label>
-            </div>
+          <?php endforeach; ?>
+          <div class="d-flex justify-content-between">
+            <button type="submit" name="reset" class="btn btn-secondary">Reset</button>
+            <button type="submit" name="next" class="btn btn-primary">Next</button>
           </div>
-        <?php endforeach; ?>
-        <div class="d-flex justify-content-between">
-          <button type="submit" name="reset" class="btn btn-secondary">Reset</button>
-          <button type="submit" name="next" class="btn btn-primary">Next</button>
-        </div>
+        <?php else: ?>
+          <p>Tidak ada gejala yang tersedia.</p>
+        <?php endif; ?>
       </form>
     </main>
 
     <footer class="mt-auto text-white-50">
-      <p>Cover template for <a href="https://getbootstrap.com/" class="text-white">Bootstrap</a>, by <a href="https://twitter.com/mdo" class="text-white">@mdo</a>.</p>
+      <p>SP - <a href="index.php" class="text-white">Daftar Penanganan Penyakit Ayam</a> @2024</p>
     </footer>
   </div>
 </body>

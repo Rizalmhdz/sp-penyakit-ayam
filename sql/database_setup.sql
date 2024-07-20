@@ -48,8 +48,8 @@ CREATE TABLE rule_symptoms (
 
 
 INSERT INTO users (username, password) VALUES 
-('admin', 'admin'), -- password: admin
-('user1', '$2y$10$0GxxSsmkvVzq4N0K6IXS7OHBZeqZrMWbS.vrOxE7IfzffMQKKpiKq'); -- password: user1
+('admin', '$2y$10$YM2moLoYheAtjSo.ETD9rO3hDBGXWinVUDeStLVS9q6cSsUOSi1tm'), -- password: admin    ||||| debug -> password_hash($password, PASSWORD_BCRYPT)
+('user1', '$2y$10$iSwqS9Add1I27oM./tOpPu0DzHPAvlCGpuLyEsZiJEgDhwmrBUyYe'); -- password: user1    ||||| debug -> password_hash($password, PASSWORD_BCRYPT)
 
 
 INSERT INTO symptoms (code, name) VALUES

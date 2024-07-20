@@ -95,5 +95,8 @@ if (isset($_POST['add_admin'])) {
         <br>
         <button type="submit" name="add_admin">Add Admin</button>
     </form>
+    <footer class="mt-auto text-white-50">
+      <p>SP - <a href="index.php" class="text-white">Daftar Penanganan Penyakit Ayam</a> @2024</p>
+    </footer>
 </body>
 </html>

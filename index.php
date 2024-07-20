@@ -22,13 +22,14 @@ $symptoms = $symptoms_result->fetch_all(MYSQLI_ASSOC);
 <body class="d-flex h-100 text-center">
   <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
     <header class="mb-auto text-center">
-      <h3 class="mb-0">Sistem Pakar</h3>
+      <h3 class="mb-0" onclick="window.location.href = 'index.php'" style="cursor: pointer;">Sistem Pakar</h3>
       <nav class="nav nav-masthead justify-content-center mt-2">
-        <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="#">Home</a>
         <?php if (isset($_SESSION['username'])): ?>
-          <a class="nav-link fw-bold py-1 px-0" href="#"><?= $_SESSION['username'] ?></a>
+          <a class="nav-link fw-bold py-1 px-0 active" href="index.php"><?= $_SESSION['username'] ?></a>
+          <a class="nav-link fw-bold py-1 px-0" href="admin.php">Kelola Data</a>
           <a class="nav-link fw-bold py-1 px-0" href="logout.php">Logout</a>
         <?php else: ?>
+          <a class="nav-link fw-bold py-1 px-0 active" aria-current="page" href="index.php">Home</a>
           <a class="nav-link fw-bold py-1 px-0" href="login.php">Login</a>
         <?php endif; ?>
       </nav>
@@ -43,8 +44,9 @@ $symptoms = $symptoms_result->fetch_all(MYSQLI_ASSOC);
     </main>
 
     <footer class="mt-auto text-white-50">
-      <p>Cover template for <a href="https://getbootstrap.com/" class="text-white">Bootstrap</a>, by <a href="https://twitter.com/mdo" class="text-white">@mdo</a>.</p>
+      <p>SP - <a href="index.php" class="text-white">Daftar Penanganan Penyakit Ayam</a> @2024</p>
     </footer>
   </div>
 </body>
+
 </html>
