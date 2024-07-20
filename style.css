@@ -1,0 +1,215 @@
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  background-color: #e68d70;
+  color: white;
+}
+
+.cover-container {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#regForm {
+  background-color: #ffffff;
+  margin: 0px auto;
+  font-family: Raleway;
+  padding: 40px;
+  border-radius: 10px;
+}
+
+.question {
+  color: #c44931;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+h1 {
+  text-align: center;
+}
+
+input {
+  padding: 10px;
+  width: 100%;
+  font-size: 17px;
+  font-family: Raleway;
+  border: 1px solid #aaaaaa;
+  border-radius: 10px;
+  -webkit-appearance: none;
+}
+
+.tab input:focus {
+  border:1px solid #6a1b9a !important;
+  outline: none;
+}
+
+input.invalid {
+  border:1px solid #e03a0666;
+}
+
+.tab {
+  display: none;
+}
+
+button {
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 50%;
+  padding: 10px 20px;
+  font-size: 17px;
+  font-family: Raleway;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #000000;
+  color: #ffffff;
+  opacity: 0.8;
+}
+
+button:focus {
+  outline: none !important;
+}
+
+#prevBtn {
+  background-color: #bbbbbb;
+}
+
+.all-steps {
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.step {
+  height: 40px;
+  width: 40px;
+  margin: 0 2px;
+  /* background-color: #bbbbbb; */
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 15px;
+  color: #6a1b9a;
+  opacity: 0.5;
+}
+
+.step.active {
+  opacity: 1;
+}
+
+.step.finish {
+  color: #fff;
+  background: #6a1b9a;
+  opacity: 1;
+}
+
+.all-steps {
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.thanks-message {
+  display: none;
+}
+
+/* COVER CSS */
+/*
+ * Globals
+ */
+
+/* Custom default button */
+.btn-light,
+.btn-light:hover,
+.btn-light:focus {
+  color: #333;
+  text-shadow: none; /* Prevent inheritance from `body` */
+}
+
+.btn:hover, .hover-dark:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/*
+ * Base structure
+ */
+
+.cover-container {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/*
+ * Header
+ */
+
+.nav-masthead .nav-link {
+  color: rgba(255, 255, 255, .5);
+  border-bottom: .25rem solid transparent;
+}
+
+.nav-masthead .nav-link:hover,
+.nav-masthead .nav-link:focus {
+  border-bottom-color: rgba(255, 255, 255, .25);
+}
+
+.nav-masthead .nav-link + .nav-link {
+  margin-left: 1rem;
+}
+
+.nav-masthead .active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.form-check-label {
+  color: #000000; /* Set the label color to black for better visibility */
+}
+
+/* 
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+} */
+
+.cover-container {
+  width: 100%;
+  max-width: 42em;
+  padding: 0 1.5rem;
+}
+
+.header,
+.footer {
+  color: #6c757d;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+.symptom-question {
+  display: none;
+}
