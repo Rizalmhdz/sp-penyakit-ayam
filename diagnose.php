@@ -1,14 +1,9 @@
 <?php
 include 'db.php';
 
-
 session_start();
 
-// Fetch Symptoms
-$symptoms_sql = "SELECT * FROM symptoms";
-$symptoms_result = $conn->query($symptoms_sql);
-$symptoms = $symptoms_result->fetch_all(MYSQLI_ASSOC);
-
+// Inisialisasi sesi jika belum ada
 if (!isset($_SESSION['symptom_index'])) {
     $_SESSION['symptom_index'] = 0;
 }
@@ -17,52 +12,65 @@ if (!isset($_SESSION['selected_symptoms'])) {
     $_SESSION['selected_symptoms'] = [];
 }
 
+// Ambil semua gejala dari database
+$symptoms_sql = "SELECT * FROM symptoms";
+$symptoms_result = $conn->query($symptoms_sql);
+$symptoms = $symptoms_result->fetch_all(MYSQLI_ASSOC);
+
+$total_symptoms = count($symptoms);
 $symptom_index = intval($_SESSION['symptom_index']);
 
+// Slice gejala untuk ditampilkan
 $symptoms_to_display = array_slice($symptoms, $symptom_index, 5);
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['next'])) {
+        // Simpan gejala yang dipilih
         foreach ($_POST['symptom'] as $index => $value) {
-            if (!empty($value)) {
-                $_SESSION['selected_symptoms'][] = $value;
+            if ($value == 'true') {
+                $_SESSION['selected_symptoms'][] = $symptoms[$symptom_index + $index]['code'];
             }
         }
 
-        $symptom_index += 5;
-        $_SESSION['symptom_index'] = $symptom_index;
+        // Update indeks gejala
+        $_SESSION['symptom_index'] += 5;
+        $symptom_index = $_SESSION['symptom_index'];
 
-        // Check if there are more symptoms to ask
-        if ($symptom_index >= count($symptoms)) {
-            $symptom_index = 0;
-            $_SESSION['symptom_index'] = 0;
-        }
+        // Jika sudah tidak ada gejala yang tersisa untuk ditampilkan
+        if ($symptom_index >= $total_symptoms) {
+            // Logika Forward Chaining
+            $selected_symptoms = "'" . implode("', '", $_SESSION['selected_symptoms']) . "'";
+            $sql = "SELECT d.code, d.name, d.advice, COUNT(*) as symptom_count
+                    FROM diseases d
+                    JOIN rules r ON d.code = r.disease_code
+                    JOIN rule_symptoms rs ON r.id = rs.rule_id
+                    WHERE rs.symptom_code IN ($selected_symptoms)
+                    GROUP BY d.code, d.name, d.advice
+                    ORDER BY symptom_count DESC, d.name ASC
+                    LIMIT 1";
 
-        // Forward Chaining Logic
-        $selected_symptoms = "'" . implode("', '", $_SESSION['selected_symptoms']) . "'";
-        $sql = "SELECT d.code, d.name, d.advice, COUNT(*) as symptom_count
-                FROM diseases d
-                JOIN rules r ON d.code = r.disease_code
-                JOIN rule_symptoms rs ON r.id = rs.rule_id
-                WHERE rs.symptom_code IN ($selected_symptoms)
-                GROUP BY d.code
-                ORDER BY symptom_count DESC
-                LIMIT 1";
+            $result = $conn->query($sql);
+            $diagnosis = $result->fetch_assoc();
 
-        $result = $conn->query($sql);
-        $diagnosis = $result->fetch_assoc();
-
-        if ($diagnosis && $diagnosis['symptom_count'] >= 5) {
-            $_SESSION['diagnosis'] = [
-                'name' => $diagnosis['name'],
-                'advice' => $diagnosis['advice']
-            ];
-            header('Location: result.php');
-            exit();
+            if ($diagnosis) {
+                $_SESSION['diagnosis'] = [
+                    'name' => $diagnosis['name'],
+                    'advice' => $diagnosis['advice']
+                ];
+                header('Location: result.php');
+                exit();
+            }
         }
     } elseif (isset($_POST['reset'])) {
-        header('Location: clear_diagnosis.php');
+        // Reset sesi
+        session_unset();
+        session_destroy();
+        header('Location: index.php');
         exit();
     }
+
+    // Refresh gejala untuk ditampilkan setelah submit
+    $symptoms_to_display = array_slice($symptoms, $symptom_index, 5);
 }
 ?>
 
@@ -93,18 +101,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <main class="px-3">
       <h1>Diagnosa Penyakit Pada Ayam</h1>
-      <form method="post" action="diagnose.php">
+      <form method="post">
         <?php if (!empty($symptoms_to_display)): ?>
           <?php foreach ($symptoms_to_display as $index => $symptom):?>
-            
             <div class="mb-3 symptom-question">
-              <p class="question text-white">Apakah ayam anda mengalami gejala <?= htmlspecialchars($symptom['name']) ?>?</p>
+              <p class="question text-white">Apakah ayam anda mengalami gejala <?= htmlspecialchars($symptom['name']) ?> (<?= htmlspecialchars($symptom['code']) ?>) ?</p>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" required name="symptom[<?= $index ?>]" id="symptom-yes-<?= $index ?>" value="<?= htmlspecialchars($symptom['code']) ?>"> 
+                <input class="form-check-input" type="radio" required name="symptom[<?= $index ?>]" id="symptom-yes-<?= $index ?>" value="true"> 
                 <label class="form-check-label text-white" for="symptom-yes-<?= $index ?>">Iya</label>
               </div>
               <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" required name="symptom[<?= $index ?>]" id="symptom-no-<?= $index ?>" value="" checked>
+                <input class="form-check-input" type="radio" required name="symptom[<?= $index ?>]" id="symptom-no-<?= $index ?>" value="false" checked>
                 <label class="form-check-label text-white" for="symptom-no-<?= $index ?>">Tidak</label>
               </div>
             </div>
@@ -115,6 +122,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           </div>
         <?php else: ?>
           <p>Tidak ada gejala yang tersedia.</p>
+          <?php 
+          session_unset();
+          session_destroy();
+          ?><div class="d-flex justify-content-center">
+          <button type="submit" name="reset" class="btn btn-secondary">Reset</button>
+        </div>
         <?php endif; ?>
       </form>
     </main>
