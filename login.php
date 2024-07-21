@@ -17,15 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
-            header('Location: admin.php');
+            header('Location: index.php');
             exit();
         } else {
-            $error = 'Invalid username or password';;
-            
+            $error = 'Username atau password salah';
         }
     } else {
-        $error = 'Invalid username or password';
-        
+        $error = 'Username atau password salah';
     }
 }
 ?>
@@ -44,10 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       <nav class="nav nav-masthead justify-content-center mt-2">
         <?php if (isset($_SESSION['username'])): ?>
           <a class="nav-link fw-bold py-1 px-0 active" href="index.php"><?= $_SESSION['username'] ?></a>
-          <a class="nav-link fw-bold py-1 px-0" href="admin.php">Kelola Data</a>
+          <a class="nav-link fw-bold py-1 px-0" href="admin/gejala.php">Kelola Data</a>
           <a class="nav-link fw-bold py-1 px-0" href="logout.php">Logout</a>
         <?php else: ?>
-          <a class="nav-link fw-bold py-1 px-0 " aria-current="page" href="index.php">Home</a>
+          <a class="nav-link fw-bold py-1 px-0" aria-current="page" href="index.php">Home</a>
           <a class="nav-link fw-bold py-1 px-0 active" href="login.php">Login</a>
         <?php endif; ?>
       </nav>

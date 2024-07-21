@@ -287,3 +287,29 @@ footer {
   margin-top: 2rem;
   color: rgba(0, 0, 0, .5);
 }
+
+.selected-symptoms {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+.symptom-checkboxes .form-check {
+  margin-bottom: 10px;
+}
+
+
+.btn-action button {
+  margin-bottom: 10px;
+}
+.selected-symptoms {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+}
+.symptom-checkboxes .form-check {
+  margin-bottom: 10px;
+}
+.form-check-label {
+  font-size: smaller;
+}

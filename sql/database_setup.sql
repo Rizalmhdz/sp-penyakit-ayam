@@ -1,6 +1,6 @@
 CREATE DATABASE sistem_pakar_penyakit_ayam;
 
-DROP DATABASE sistem_pakar_penyakit_ayam;
+-- DROP DATABASE sistem_pakar_penyakit_ayam;
 
 USE sistem_pakar_penyakit_ayam;
 
