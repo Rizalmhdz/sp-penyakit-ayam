@@ -8,6 +8,10 @@ $symptoms_sql = "SELECT * FROM symptoms";
 $symptoms_result = $conn->query($symptoms_sql);
 $symptoms = $symptoms_result->fetch_all(MYSQLI_ASSOC);
 
+unset($_SESSION['diagnosis']);
+unset($_SESSION['symptom_index']);
+unset($_SESSION['selected_symptoms']);
+
 ?>
 
 <!DOCTYPE html>

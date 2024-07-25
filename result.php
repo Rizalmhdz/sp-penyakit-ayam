@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+// Cek apakah data diagnosis dan gejala telah diset di sesi
 if (!isset($_SESSION['diagnosis']) || !isset($_SESSION['selected_symptoms'])) {
     header('Location: index.php');
     exit();
@@ -22,8 +23,11 @@ foreach ($selected_symptoms as $code) {
     $stmt->close();
 }
 
-$advice = wordwrap($diagnosis['advice'], 7, "\n", true);
+$advice = $diagnosis['advice'];
+$diag_name = $diagnosis['name'];
 
+date_default_timezone_set('Asia/Jakarta');
+$timestamp = date('Y-m-d H:i:s', time());
 ?>
 
 <!DOCTYPE html>
@@ -42,7 +46,7 @@ $advice = wordwrap($diagnosis['advice'], 7, "\n", true);
       <h3 class="mb-0" onclick="window.location.href = 'index.php'" style="cursor: pointer;">Sistem Pakar</h3>
       <nav class="nav nav-masthead justify-content-center mt-2">
         <?php if (isset($_SESSION['username'])): ?>
-          <a class="nav-link fw-bold py-1 px-0 active" href="index.php"><?= $_SESSION['username'] ?></a>
+          <a class="nav-link fw-bold py-1 px-0 active" href="index.php"><?= htmlspecialchars($_SESSION['username']) ?></a>
           <a class="nav-link fw-bold py-1 px-0" href="admin/gejala.php">Kelola Data</a>
           <a class="nav-link fw-bold py-1 px-0" href="logout.php">Logout</a>
         <?php else: ?>
@@ -55,8 +59,8 @@ $advice = wordwrap($diagnosis['advice'], 7, "\n", true);
     <main class="px-3">
       <h1>Hasil Diagnosa</h1>
       <div>
-        <h5>Penyakit yang terdeteksi: <?= $diagnosis['name'] ?></h5>
-        <p>Saran: <?= $diagnosis['advice'] ?></p>
+        <h5>Penyakit yang terdeteksi: <?= htmlspecialchars($diagnosis['name']) ?></h5>
+        <p>Saran: <?= htmlspecialchars($diagnosis['advice']) ?></p>
       </div>
       <div class="d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" onclick="window.location.href='clear_diagnosis.php'">Tutup</button>
@@ -88,99 +92,121 @@ $advice = wordwrap($diagnosis['advice'], 7, "\n", true);
   </div>
 
   <script>
-    function showModalOrGeneratePDF() {
-      <?php if (!isset($_SESSION['username'])): ?>
-        var nameModal = new bootstrap.Modal(document.getElementById('nameModal'));
-        nameModal.show();
-      <?php else: ?>
-        generatePDF();
-      <?php endif; ?>
+  function showModalOrGeneratePDF() {
+    <?php if (!isset($_SESSION['username'])): ?>
+      var nameModal = new bootstrap.Modal(document.getElementById('nameModal'));
+      nameModal.show();
+    <?php else: ?>
+      generatePDF();
+    <?php endif; ?>
+  }
+
+  function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Mendapatkan input pengguna atau default ke 'User'
+    var userName = document.getElementById('userName').value || 'User';
+    var diagnosisName = '<?= $diag_name ?>';
+    var advice = <?= json_encode($advice) ?>;
+    var timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+
+    // Pengaturan margin
+    const marginX = 20;
+    const marginY = 20;
+    const contentWidth = doc.internal.pageSize.width - 2 * marginX;
+
+    // Posisi awal
+    let y = marginY;
+
+    // Header
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Laporan', doc.internal.pageSize.width / 2, y, { align: 'center' });
+    y += 10;
+    doc.setFontSize(14);
+    doc.text('Daftar Penanganan Penyakit Ayam', doc.internal.pageSize.width / 2, y, { align: 'center' });
+    y += 20;
+
+    // Informasi Pengguna
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Nama', marginX, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`:  ${userName}`, marginX + 35, y); // Mengatur titik dua agar sejajar
+    y+= 5
+
+    // Mulai border rounded
+    const startY = y ; // Posisi awal border dengan margin atas
+
+    y+= 10
+
+    // Diagnosis
+    doc.setFont('helvetica', 'bold');
+    doc.text('Diagnosa', marginX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`:`, marginX + 35, y); // Mengatur titik dua agar sejajar
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${diagnosisName}`, marginX + 38, y); // Mengatur titik dua agar sejajar
+    y += 10;
+
+    // Saran
+    doc.setFont('helvetica', 'bold');
+    doc.text('Saran', marginX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`:`, marginX + 35, y); // Mengatur titik dua agar sejajar
+    doc.setFont('helvetica', 'normal');
+    let adviceLines = doc.splitTextToSize(advice, contentWidth - 38);
+    doc.text(adviceLines, marginX + 38, y); // Mengatur titik dua agar sejajar
+    y += adviceLines.length * 10;
+
+    // Gejala
+    doc.setFont('helvetica', 'bold');
+    doc.text('Gejala', marginX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`:`, marginX + 35, y); // Mengatur titik dua agar sejajar
+    
+    y += 10;
+    const gejala = <?= json_encode($gejala_names); ?>;
+    const colWidth = contentWidth / 2;
+    let table = [];
+
+    // Membuat format tabel untuk gejala
+    const itemsPerRow = Math.ceil(gejala.length / 2);
+    for (let i = 0; i < itemsPerRow; i++) {
+      let row = [];
+      for (let j = 0; j < 2; j++) {
+        let index = i + j * itemsPerRow;
+        if (index < gejala.length) {
+          row.push(gejala[index]);
+        }
+      }
+      table.push(row);
     }
 
-    function generatePDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      var userName = document.getElementById('userName').value || 'User';
-      
-      const marginX = 20;
-      const marginY = 20;
-      const contentWidth = doc.internal.pageSize.width - 2 * marginX;
-      const pageHeight = doc.internal.pageSize.height;
-      let y = marginY;
-
-      // Header
-      doc.setFontSize(20);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Laporan', doc.internal.pageSize.width / 2, y, { align: 'center' });
+    // Mencetak tabel tanpa border
+    table.forEach(row => {
+      row.forEach((cell, index) => {
+        doc.text(cell, marginX + (index * colWidth), y);
+      });
       y += 10;
-      doc.setFontSize(12);
-      doc.text('Daftar Penanganan Penyakit Ayam', doc.internal.pageSize.width / 2, y, { align: 'center' });
-      y += 20;
-      
-      // User Info
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(12);
+    });
 
-      
-      const rows = [
-        ["Nama", ': ' + userName],
-        ["Diagnosa", ': <?= $diagnosis['name'] ?>'],
-        ["Saran", ': <?= $diagnosis['advice'] ?>'],
-        ["Gejala", ':']
-      ];
-      
-      // Table
-      for (let i = 0; i < rows.length; i++) {
-        let text = rows[i][0] + " " + rows[i][1];
-        let splitText = doc.splitTextToSize(text, contentWidth);
-        if (y + splitText.length * 10 > pageHeight - marginY) { // Check if we need to add a new page
-          doc.addPage();
-          y = marginY;
-        }
-        doc.setFont('helvetica', 'bold');
-        doc.text(rows[i][0], marginX, y);
-        doc.setFont('helvetica', 'normal');
-        doc.text(rows[i][1], marginX + 35, y);
-        y += splitText.length * 10;
-      }
+    // Menambahkan margin dari daftar gejala ke border bawah
+    const endY = y;
 
-      // Gejala in two columns and two rows
-      const gejala = <?= json_encode($gejala_names); ?>;
-      const colWidth = contentWidth / 2;
-      let colY = y;
-      let colX = marginX;
-      const itemsPerRow = Math.ceil(gejala.length / 2); // Determine how many items per row
+    // Timestamp di luar border
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Timestamp: ${timestamp}`, marginX, endY + 10);
 
-      for (let i = 0; i < itemsPerRow; i++) {
-        for (let j = 0; j < 2; j++) {
-          let index = i + j * itemsPerRow;
-          if (index < gejala.length) {
-            let text = gejala[index];
-            let splitText = doc.splitTextToSize(text, colWidth);
-            if (colY + splitText.length * 10 > pageHeight - marginY) { // Check if we need to add a new page
-              doc.addPage();
-              colY = marginY;
-              colX = marginX;
-            }
-            doc.text(splitText, colX, colY);
-            colX += colWidth;
-          }
-        }
-        colX = marginX;
-        colY += 10; // Move to the next row
-      }
+    // Menambahkan border luar dengan rounded corners
+    doc.setLineWidth(0.5); // Border tidak bold
+    doc.roundedRect(marginX - 10, startY, doc.internal.pageSize.width - 2 * marginX + 20, endY - startY, 10, 10, 'S');
 
-      // Timestamp
-      if (colY + 10 > pageHeight - marginY) { // Check if we need to add a new page
-        doc.addPage();
-        colY = marginY;
-      }
-      doc.text('Timestamp: ' + new Date().toLocaleString(), marginX, colY + 10);
+    // Menyimpan PDF
+    doc.save(`diagnosis_report_${userName}.pdf`);
+  }
+</script>
 
-      // Save the PDF
-      doc.save('diagnosis_report_' + userName +'.pdf');
-    }
-  </script>
-  
 </body>
 </html>
