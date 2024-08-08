@@ -25,6 +25,7 @@ foreach ($selected_symptoms as $code) {
 
 $advice = $diagnosis['advice'];
 $diag_name = $diagnosis['name'];
+$medicine = $diagnosis['medicine'];
 
 date_default_timezone_set('Asia/Jakarta');
 $timestamp = date('Y-m-d H:i:s', time());
@@ -60,7 +61,8 @@ $timestamp = date('Y-m-d H:i:s', time());
       <h1>Hasil Diagnosa</h1>
       <div>
         <h5>Penyakit yang terdeteksi: <?= htmlspecialchars($diagnosis['name']) ?></h5>
-        <p>Saran: <?= htmlspecialchars($diagnosis['advice']) ?></p>
+        <p>Saran <span>:</span> <?= htmlspecialchars($diagnosis['advice']) ?></p>
+        <p>Obat <span>:</span> <?= htmlspecialchars($diagnosis['medicine']) ?></p>
       </div>
       <div class="d-flex justify-content-between">
         <button type="button" class="btn btn-secondary" onclick="window.location.href='clear_diagnosis.php'">Tutup</button>
@@ -109,6 +111,7 @@ $timestamp = date('Y-m-d H:i:s', time());
     var userName = document.getElementById('userName').value || 'User';
     var diagnosisName = '<?= $diag_name ?>';
     var advice = <?= json_encode($advice) ?>;
+    var medicine = <?= json_encode($medicine) ?>;
     var timestamp = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
 
     // Pengaturan margin
@@ -159,6 +162,16 @@ $timestamp = date('Y-m-d H:i:s', time());
     let adviceLines = doc.splitTextToSize(advice, contentWidth - 38);
     doc.text(adviceLines, marginX + 38, y); // Mengatur titik dua agar sejajar
     y += adviceLines.length * 10;
+
+    // Obat
+    doc.setFont('helvetica', 'bold');
+    doc.text('Obat', marginX, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`:`, marginX + 35, y); // Mengatur titik dua agar sejajar
+    doc.setFont('helvetica', 'normal');
+    let medicineLines = doc.splitTextToSize(medicine, contentWidth - 38);
+    doc.text(medicineLines, marginX + 38, y); // Mengatur titik dua agar sejajar
+    y += medicineLines.length * 10;
 
     // Gejala
     doc.setFont('helvetica', 'bold');

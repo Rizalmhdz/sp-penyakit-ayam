@@ -154,25 +154,25 @@ function deleteSymptom($id) {
     return $stmt->execute() ? true : $stmt->error;
 }
 
+
 // Fungsi untuk menambah penyakit
-function addDisease($code, $name, $advice) {
+function addDisease($code, $name, $advice, $medicine) {
     global $conn;
-    $sql = "INSERT INTO diseases (code, name, advice) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO diseases (code, name, advice, medicine) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('sss', $code, $name, $advice);
+    $stmt->bind_param('ssss', $code, $name, $advice, $medicine);
     return $stmt->execute() ? true : $stmt->error;
 }
 
 // Fungsi untuk memperbarui penyakit
-function updateDisease($id, $code, $name, $advice) {
+function updateDisease($id, $code, $name, $advice, $medicine) {
     global $conn;
-    $sql = "UPDATE diseases SET code = ?, name = ?, advice = ? WHERE id = ?";
+    $sql = "UPDATE diseases SET code = ?, name = ?, advice = ?, medicine = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param('sssi', $code, $name, $advice, $id);
+    $stmt->bind_param('ssssi', $code, $name, $advice, $medicine, $id);
     return $stmt->execute() ? true : $stmt->error;
 }
 
-// Fungsi untuk menghapus penyakit
 function deleteDisease($id) {
     global $conn;
     $sql = "DELETE FROM diseases WHERE id = ?";

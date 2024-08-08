@@ -25,6 +25,7 @@ CREATE TABLE diseases (
     code VARCHAR(10) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     advice TEXT NOT NULL,
+    medicine VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -45,12 +46,9 @@ CREATE TABLE rule_symptoms (
     PRIMARY KEY (rule_id, symptom_code)
 );
 
-
-
 INSERT INTO users (username, password) VALUES 
 ('admin', '$2y$10$YM2moLoYheAtjSo.ETD9rO3hDBGXWinVUDeStLVS9q6cSsUOSi1tm'), -- password: admin    ||||| debug -> password_hash($password, PASSWORD_BCRYPT)
 ('user1', '$2y$10$iSwqS9Add1I27oM./tOpPu0DzHPAvlCGpuLyEsZiJEgDhwmrBUyYe'); -- password: user1    ||||| debug -> password_hash($password, PASSWORD_BCRYPT)
-
 
 INSERT INTO symptoms (code, name) VALUES
 ('G001', 'Nafsu makan berkurang'),
@@ -91,17 +89,17 @@ INSERT INTO symptoms (code, name) VALUES
 ('G036', 'Warna bulu kusam dan pucat'),
 ('G037', 'Ayam tampak lesu dan tidak bergairah');
 
-INSERT INTO diseases (code, name, advice) VALUES
-('P001', 'Avian Influenza', 'Isolasi ayam yang sakit, berikan antibiotik, dan konsultasikan dengan dokter hewan.'),
-('P002', 'Kolera Ayam', 'Bersihkan dan desinfeksi kandang, berikan antibiotik, dan lakukan vaksinasi.'),
-('P003', 'Penyakit Pullorum', 'Isolasi ayam yang terinfeksi, berikan antibiotik yang sesuai, dan pastikan kebersihan serta sanitasi kandang.'),
-('P004', 'Penyakit Newcastle', 'Lakukan vaksinasi segera, berikan vitamin tambahan, dan jaga kebersihan kandang.'),
-('P005', 'Koksidiosis', 'Berikan obat anti-koksidia, jaga kebersihan kandang, dan pastikan sanitasi yang baik.'),
-('P006', 'Penyakit Gumboro', 'Lakukan vaksinasi pada ayam yang sehat, berikan elektrolit, dan jaga kebersihan kandang.'),
-('P007', 'Koriza Infeksius', 'Berikan antibiotik, jaga kebersihan kandang, dan pastikan ventilasi yang baik.'),
-('P008', 'Bronkitis Infeksius', 'Lakukan vaksinasi, berikan antibiotik, dan jaga kebersihan serta ventilasi kandang.'),
-('P009', 'Penyakit Pernafasan Kronis', 'Berikan antibiotik, vitamin, dan jaga kebersihan serta ventilasi kandang.'),
-('P010', 'Kolibasilosis', 'Berikan antibiotik, jaga kebersihan kandang, dan pastikan sanitasi yang baik.');
+INSERT INTO diseases (code, name, advice, medicine) VALUES
+('P001', 'Avian Influenza', 'Isolasi ayam yang sakit, berikan antibiotik, dan konsultasikan dengan dokter hewan.', 'Vaksin Avian Influenza, Antibiotik, dan Obat Antiviral'),
+('P002', 'Kolera Ayam', 'Bersihkan dan desinfeksi kandang, berikan antibiotik, dan lakukan vaksinasi.', 'Antibiotik (amoksisilin, kolistin, florfenicol), Probiotik, dan Suplemen Elektrolit'),
+('P003', 'Penyakit Pullorum', 'Isolasi ayam yang terinfeksi, berikan antibiotik yang sesuai, dan pastikan kebersihan serta sanitasi kandang.', 'Tidak ada obat spesifik, pencegahan dengan vaksinasi sangat penting'),
+('P004', 'Penyakit Newcastle', 'Lakukan vaksinasi segera, berikan vitamin tambahan, dan jaga kebersihan kandang.', 'Vaksin Newcastle Disease, Vitamin dan Elektrolit'),
+('P005', 'Koksidiosis', 'Berikan obat anti-koksidia, jaga kebersihan kandang, dan pastikan sanitasi yang baik.', 'Obat Anti-koksidia (kokcidiostat)'),
+('P006', 'Penyakit Gumboro', 'Lakukan vaksinasi pada ayam yang sehat, berikan elektrolit, dan jaga kebersihan kandang.', 'Vaksin Gumboro, Elektrolit'),
+('P007', 'Koriza Infeksius', 'Berikan antibiotik, jaga kebersihan kandang, dan pastikan ventilasi yang baik.', 'Antibiotik, Vitamin, dan Obat Tetes Mata'),
+('P008', 'Bronkitis Infeksius', 'Lakukan vaksinasi, berikan antibiotik, dan jaga kebersihan serta ventilasi kandang.', 'Vaksin Bronkitis Infeksius, Antibiotik'),
+('P009', 'Penyakit Pernafasan Kronis', 'Berikan antibiotik, vitamin, dan jaga kebersihan serta ventilasi kandang.', 'Antibiotik, Vitamin, dan Obat Pernafasan'),
+('P010', 'Kolibasilosis', 'Berikan antibiotik, jaga kebersihan kandang, dan pastikan sanitasi yang baik.', 'Antibiotik, Probiotik');
 
 -- Insert Rules
 INSERT INTO rules (disease_code) VALUES

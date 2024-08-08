@@ -32,47 +32,103 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         }
 
+        // echo implode(" ", $_SESSION['selected_symptoms']);
+
         // Update indeks gejala
         $_SESSION['symptom_index'] += 5;
         $symptom_index = $_SESSION['symptom_index'];
 
         // Jika sudah tidak ada gejala yang tersisa untuk ditampilkan
-        if ($symptom_index >= $total_symptoms) {
-            // Logika Forward Chaining
-            $selected_symptoms = "'" . implode("', '", $_SESSION['selected_symptoms']) . "'";
-            $sql = "SELECT d.code, d.name, d.advice, COUNT(*) as symptom_count
-                    FROM diseases d
-                    JOIN rules r ON d.code = r.disease_code
-                    JOIN rule_symptoms rs ON r.id = rs.rule_id
-                    WHERE rs.symptom_code IN ($selected_symptoms)
-                    GROUP BY d.code, d.name, d.advice
-                    ORDER BY symptom_count DESC, d.name ASC
-                    LIMIT 1";
-
-            $result = $conn->query($sql);
-            $diagnosis = $result->fetch_assoc();
-
-            if ($diagnosis) {
-                $_SESSION['diagnosis'] = [
-                    'name' => $diagnosis['name'],
-                    'advice' => $diagnosis['advice']
-                ];
+        // if ($symptom_index >= $total_symptoms) {
+            $forwardChainingResult = performForwardChaining($conn, $_SESSION['selected_symptoms']);
+            if ($forwardChainingResult) {
+                $_SESSION['diagnosis'] = $forwardChainingResult;
                 header('Location: result.php');
                 exit();
             }
-        }
+        // }
     } elseif (isset($_POST['reset'])) {
         // Reset sesi
         session_unset();
         session_destroy();
         header('Location: index.php');
         exit();
+    } else {
+        // Periksa dengan forward chaining pada setiap submit
+        $forwardChainingResult = performForwardChaining($conn, $_SESSION['selected_symptoms']);
+        if ($forwardChainingResult) {
+            $_SESSION['diagnosis'] = $forwardChainingResult;
+            header('Location: result.php');
+            exit();
+        }
     }
 
     // Refresh gejala untuk ditampilkan setelah submit
     $symptoms_to_display = array_slice($symptoms, $symptom_index, 5);
 }
+
+// Fungsi untuk menjalankan forward chaining
+function performForwardChaining($conn, $selected_symptoms) {
+    $selected_symptoms_str = "'" . implode("', '", $selected_symptoms) . "'";
+
+    // Ambil semua rules dan gejalanya
+    $sql = "SELECT r.id as rule_id, r.disease_code, rs.symptom_code, d.name as disease_name, d.advice, d.medicine
+            FROM rules r
+            JOIN rule_symptoms rs ON r.id = rs.rule_id
+            JOIN diseases d ON r.disease_code = d.code";
+    $result = $conn->query($sql);
+
+    $rules = [];
+    while ($row = $result->fetch_assoc()) {
+        $rules[$row['rule_id']]['disease_code'] = $row['disease_code'];
+        $rules[$row['rule_id']]['disease_name'] = $row['disease_name'];
+        $rules[$row['rule_id']]['advice'] = $row['advice'];
+        $rules[$row['rule_id']]['medicine'] = $row['medicine'];
+        $rules[$row['rule_id']]['symptoms'][] = $row['symptom_code'];
+    }
+
+    // Evaluasi setiap rule
+    foreach ($rules as $rule) {
+        $rule_symptoms = $rule['symptoms'];
+        $matched_symptoms = array_intersect($rule_symptoms, $selected_symptoms);
+
+        // Jika semua gejala dalam rule terpenuhi
+        if (count($matched_symptoms) == count($rule_symptoms)) {
+            return [
+                'name' => $rule['disease_name'],
+                'advice' => $rule['advice'],
+                'medicine' => $rule['medicine']
+            ];
+        }
+    }
+
+    // Jika tidak ada rule yang terpenuhi sepenuhnya, lakukan diagnosis dengan threshold 80%
+    $sql = "SELECT d.code, d.name, d.advice, COUNT(*) as symptom_count, 
+            (COUNT(*) / (SELECT COUNT(*) FROM rule_symptoms WHERE rule_symptoms.rule_id = r.id)) as match_percentage
+            FROM diseases d
+            JOIN rules r ON d.code = r.disease_code
+            JOIN rule_symptoms rs ON r.id = rs.rule_id
+            WHERE rs.symptom_code IN ($selected_symptoms_str)
+            GROUP BY d.code, d.name, d.advice, r.id
+            HAVING match_percentage >= 0.8
+            ORDER BY symptom_count DESC, d.name ASC
+            LIMIT 1";
+
+    $result = $conn->query($sql);
+    $diagnosis = $result->fetch_assoc();
+
+    if ($diagnosis) {
+        return [
+            'name' => $diagnosis['name'],
+            'advice' => $diagnosis['advice'],
+            'medicine' => $diagnosis['medicine']
+        ];
+    }
+
+    return null;
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>

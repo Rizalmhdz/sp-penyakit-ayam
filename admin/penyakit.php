@@ -23,7 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_disease'])) {
     $code = filter_input(INPUT_POST, 'code', FILTER_SANITIZE_STRING);
     $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
     $advice = filter_input(INPUT_POST, 'advice', FILTER_SANITIZE_STRING);
-    $result = addDisease($code, $name, $advice);
+    $medicine = filter_input(INPUT_POST, 'medicine', FILTER_SANITIZE_STRING);
+    $result = addDisease($code, $name, $advice, $medicine);
     $message = $result === true ? "Penyakit $code berhasil ditambahkan." : "Gagal menambahkan penyakit $code: " . $result;
     $page_diseases = ceil(($total_diseases + 1) / $limit); // Menghitung halaman yang akan memuat data baru
     $_SESSION['message'] = $message;
@@ -38,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_disease'])) {
     $code = filter_input(INPUT_POST, 'code', FILTER_SANITIZE_STRING);
     $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
     $advice = filter_input(INPUT_POST, 'advice', FILTER_SANITIZE_STRING);
-    $result = updateDisease($id, $code, $name, $advice);
+    $medicine = filter_input(INPUT_POST, 'medicine', FILTER_SANITIZE_STRING);
+    $result = updateDisease($id, $code, $name, $advice, $medicine);
     $message = $result === true ? "Penyakit $code berhasil diperbarui." : "Gagal memperbarui penyakit $code: " . $result;
     $_SESSION['message'] = $message;
     $_SESSION['message_type'] = $result === true ? 'success' : 'danger';
@@ -138,6 +140,7 @@ unset($_SESSION['message_type']);
                             <th>Kode</th>
                             <th>Nama</th>
                             <th>Advice</th>
+                            <th>Obat</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -149,15 +152,15 @@ unset($_SESSION['message_type']);
                                 <td><?= $disease['code'] ?></td>
                                 <td><?= $disease['name'] ?></td>
                                 <td><?= $disease['advice'] ?></td>
+                                <td><?= $disease['medicine'] ?></td>
                                 <td class="btn-action">
-                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editDiseaseModal" data-diseaseid="<?= $disease['id'] ?>" data-code="<?= $disease['code'] ?>" data-name="<?= $disease['name'] ?>" data-advice="<?= $disease['advice'] ?>">Edit</button>
+                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editDiseaseModal" data-diseaseid="<?= $disease['id'] ?>" data-code="<?= $disease['code'] ?>" data-name="<?= $disease['name'] ?>" data-advice="<?= $disease['advice'] ?>" data-medicine="<?= $disease['medicine'] ?>">Edit</button>
                                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDiseaseModal" data-diseaseid="<?= $disease['id'] ?>" data-code="<?= $disease['code'] ?>">Hapus</button>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr>
-                                <td colspan="5">Tidak ada data tersedia.</td>
+                                <td colspan="6">Tidak ada data tersedia.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -205,6 +208,10 @@ unset($_SESSION['message_type']);
                             <label for="advice" class="form-label text-dark">Advice</label>
                             <textarea class="form-control" id="advice" name="advice" required></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label for="medicine" class="form-label text-dark">Obat</label>
+                            <textarea class="form-control" id="medicine" name="medicine" required></textarea>
+                        </div>
                         <button type="submit" class="btn btn-primary" name="add_disease">Tambah Penyakit</button>
                     </form>
                 </div>
@@ -234,6 +241,10 @@ unset($_SESSION['message_type']);
                         <div class="mb-3">
                             <label for="editAdvice" class="form-label text-dark">Advice</label>
                             <textarea class="form-control" id="editAdvice" name="advice" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMedicine" class="form-label text-dark">Obat</label>
+                            <textarea class="form-control" id="editMedicine" name="medicine" required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary" name="edit_disease">Perbarui Penyakit</button>
                     </form>
@@ -279,16 +290,19 @@ unset($_SESSION['message_type']);
             var code = button.getAttribute('data-code');
             var name = button.getAttribute('data-name');
             var advice = button.getAttribute('data-advice');
+            var medicine = button.getAttribute('data-medicine');
             var modalTitle = editDiseaseModal.querySelector('.modal-title');
             var modalBodyInputCode = editDiseaseModal.querySelector('.modal-body input#editCode');
             var modalBodyInputName = editDiseaseModal.querySelector('.modal-body input#editName');
             var modalBodyInputAdvice = editDiseaseModal.querySelector('.modal-body textarea#editAdvice');
+            var modalBodyInputMedicine = editDiseaseModal.querySelector('.modal-body textarea#editMedicine');
             var modalBodyIdInput = editDiseaseModal.querySelector('.modal-body input#editDiseaseId');
 
             modalTitle.textContent = 'Edit Penyakit ' + name;
             modalBodyInputCode.value = code;
             modalBodyInputName.value = name;
             modalBodyInputAdvice.value = advice;
+            modalBodyInputMedicine.value = medicine;
             modalBodyIdInput.value = diseaseId;
         });
 
